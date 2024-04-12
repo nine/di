@@ -7,6 +7,7 @@
 #pragma once
 
 #include "boost/di.hpp"
+#include <cstdint>
 
 //<-
 #if defined(__CLANG__)
@@ -43,8 +44,8 @@ template <char...>
 struct chars {};
 
 struct pair {
-  long begin{};
-  long end{};
+  std::int64_t begin{};
+  std::int64_t end{};
 };
 
 #if (__GNUC__ >= 9)
@@ -53,22 +54,22 @@ struct pair {
 #endif
 template <class T, T... Chars>
 constexpr auto operator""_s() {
-  return aux::integral_constant<long, const_hash(chars<Chars...>{}, sizeof...(Chars) + 1)>{};
+  return aux::integral_constant<std::int64_t, const_hash(chars<Chars...>{}, sizeof...(Chars) + 1)>{};
 }
 #if (__GNUC__ >= 9)
 #pragma GCC diagnostic pop
 #endif
 
-long constexpr const_hash(char const* input, long m = 0, long i = 0) {
-  return *input && i < m ? static_cast<long>(*input) + 33 * const_hash(input + 1, m, i + 1) : 5381;
+std::int64_t constexpr const_hash(char const* input, std::int64_t m = 0, std::int64_t i = 0) {
+  return *input && i < m ? static_cast<std::int64_t>(*input) + 33 * const_hash(input + 1, m, i + 1) : 5381;
 }
 
 template <char C, char... Chars>
-long constexpr const_hash(const chars<C, Chars...>&, long m = 0, long i = 0) {
-  return C && i < m ? static_cast<long>(C) + 33 * const_hash(chars<Chars...>{}, m, i + 1) : 5381;
+std::int64_t constexpr const_hash(const chars<C, Chars...>&, std::int64_t m = 0, std::int64_t i = 0) {
+  return C && i < m ? static_cast<std::int64_t>(C) + 33 * const_hash(chars<Chars...>{}, m, i + 1) : 5381;
 }
 
-long constexpr const_hash(const chars<>&, ...) { return 5381; }
+std::int64_t constexpr const_hash(const chars<>&, ...) { return 5381; }
 
 constexpr pair get_name_impl(const char* input, int begin, int n = 0, int quote = 0) {
   return !*input || *input == ','
@@ -93,7 +94,7 @@ template <class T, class TArg, int N>
 struct parse {
   static constexpr auto name = get_name(T::str, N);
   using type = aux::conditional_t<name.begin == name.end, TArg,
-                                  named<aux::integral_constant<long, const_hash(&T::str[name.begin], name.end)>, TArg>>;
+                                  named<aux::integral_constant<std::int64_t, const_hash(&T::str[name.begin], name.end)>, TArg>>;
 };
 
 template <class, class, class...>
